@@ -1,0 +1,8 @@
+bin/
+obj/
+*.user
+.vs/
+packages/
+*.suo
+ApplicationParameters/*.xml
+PublishProfiles/*.xml
