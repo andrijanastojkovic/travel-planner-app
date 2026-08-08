@@ -11,6 +11,8 @@ using Microsoft.ServiceFabric.Services.Communication.AspNetCore;
 using Microsoft.ServiceFabric.Services.Communication.Runtime;
 using Microsoft.ServiceFabric.Services.Runtime;
 using Microsoft.ServiceFabric.Data;
+using Microsoft.EntityFrameworkCore;
+using ExpenseService.Data;
 
 namespace ExpenseService
 {
@@ -37,6 +39,8 @@ namespace ExpenseService
                         ServiceEventSource.Current.ServiceMessage(serviceContext, $"Starting Kestrel on {url}");
 
                         var builder = WebApplication.CreateBuilder();
+
+                        builder.Services.AddDbContext<ExpenseDbContext>(options => options.UseSqlServer(builder.Configuration.GetConnectionString("ExpenseDb")));
 
                         builder.Services.AddSingleton<StatelessServiceContext>(serviceContext);
                         builder.WebHost
