@@ -11,6 +11,8 @@ using Microsoft.ServiceFabric.Services.Communication.AspNetCore;
 using Microsoft.ServiceFabric.Services.Communication.Runtime;
 using Microsoft.ServiceFabric.Services.Runtime;
 using Microsoft.ServiceFabric.Data;
+using Microsoft.EntityFrameworkCore;
+using TripPlanningService.Data;
 
 namespace TripPlanningService
 {
@@ -37,6 +39,8 @@ namespace TripPlanningService
                         ServiceEventSource.Current.ServiceMessage(serviceContext, $"Starting Kestrel on {url}");
 
                         var builder = WebApplication.CreateBuilder();
+
+                        builder.Services.AddDbContext<TripPlanningDbContext>(options => options.UseSqlServer(builder.Configuration.GetConnectionString("TripPlanningDb")));
 
                         builder.Services
                                     .AddSingleton<StatefulServiceContext>(serviceContext)
