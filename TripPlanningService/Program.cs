@@ -1,31 +1,33 @@
-using Microsoft.ServiceFabric.Services.Runtime;
+﻿using Microsoft.ServiceFabric.Services.Runtime;
 using System;
 using System.Diagnostics;
 using System.Threading;
-using System.Threading.Tasks;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.IdentityModel.Tokens;
+using System.Text;
+using TripPlanningService.Data;
 
 namespace TripPlanningService
 {
     internal static class Program
     {
-        /// <summary>
-        /// This is the entry point of the service host process.
-        /// </summary>
-        private static void Main()
+        private static void Main(string[] args)
         {
+            if (args.Length > 0 && args[0] == "--standalone")
+            {
+                RunStandalone();
+                return;
+            }
+
             try
             {
-                // The ServiceManifest.XML file defines one or more service type names.
-                // Registering a service maps a service type name to a .NET type.
-                // When Service Fabric creates an instance of this service type,
-                // an instance of the class is created in this host process.
-
                 ServiceRuntime.RegisterServiceAsync("TripPlanningServiceType",
                     context => new TripPlanningService(context)).GetAwaiter().GetResult();
 
                 ServiceEventSource.Current.ServiceTypeRegistered(Process.GetCurrentProcess().Id, typeof(TripPlanningService).Name);
 
-                // Prevents this host process from terminating so services keeps running. 
                 Thread.Sleep(Timeout.Infinite);
             }
             catch (Exception e)
@@ -33,6 +35,84 @@ namespace TripPlanningService
                 ServiceEventSource.Current.ServiceHostInitializationFailed(e.ToString());
                 throw;
             }
+        }
+
+        private static void RunStandalone()
+        {
+            var builder = WebApplication.CreateBuilder();
+
+            builder.Services.AddDbContext<TripPlanningDbContext>(options =>
+                options.UseSqlServer(builder.Configuration.GetConnectionString("TripPlanningDb")));
+
+            var jwtSettings = builder.Configuration.GetSection("JwtSettings");
+            var secretKey = jwtSettings["SecretKey"];
+
+            builder.Services.AddAuthentication(options =>
+            {
+                options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+                options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+            })
+            .AddJwtBearer(options =>
+            {
+                options.TokenValidationParameters = new TokenValidationParameters
+                {
+                    ValidateIssuer = true,
+                    ValidateAudience = true,
+                    ValidateLifetime = true,
+                    ValidateIssuerSigningKey = true,
+                    ValidIssuer = jwtSettings["Issuer"],
+                    ValidAudience = jwtSettings["Audience"],
+                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secretKey))
+                };
+            });
+
+            builder.Services.AddAuthorization();
+
+            builder.Services.AddControllers()
+                        .AddJsonOptions(options =>
+                        {
+                               options.JsonSerializerOptions.ReferenceHandler = System.Text.Json.Serialization.ReferenceHandler.IgnoreCycles;
+                        });
+
+            builder.Services.AddEndpointsApiExplorer();
+
+
+            builder.Services.AddSwaggerGen(options =>
+            {
+                options.AddSecurityDefinition("Bearer", new Microsoft.OpenApi.Models.OpenApiSecurityScheme
+                {
+                    Description = "JWT Authorization header koristeći Bearer šemu. Primer: \"Bearer {token}\"",
+                    Name = "Authorization",
+                    In = Microsoft.OpenApi.Models.ParameterLocation.Header,
+                    Type = Microsoft.OpenApi.Models.SecuritySchemeType.ApiKey,
+                    Scheme = "Bearer"
+                });
+
+                options.AddSecurityRequirement(new Microsoft.OpenApi.Models.OpenApiSecurityRequirement
+                {
+                    {
+                        new Microsoft.OpenApi.Models.OpenApiSecurityScheme
+                        {
+                            Reference = new Microsoft.OpenApi.Models.OpenApiReference
+                            {
+                                Type = Microsoft.OpenApi.Models.ReferenceType.SecurityScheme,
+                                Id = "Bearer"
+                            }
+                        },
+                        Array.Empty<string>()
+                    }
+                });
+            });
+
+            var app = builder.Build();
+
+            app.UseSwagger();
+            app.UseSwaggerUI();
+            app.UseAuthentication();
+            app.UseAuthorization();
+            app.MapControllers();
+
+            app.Run();
         }
     }
 }

@@ -13,6 +13,9 @@ using Microsoft.ServiceFabric.Services.Runtime;
 using Microsoft.ServiceFabric.Data;
 using Microsoft.EntityFrameworkCore;
 using TripPlanningService.Data;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.IdentityModel.Tokens;
+using System.Text;
 
 namespace TripPlanningService
 {
@@ -42,6 +45,30 @@ namespace TripPlanningService
 
                         builder.Services.AddDbContext<TripPlanningDbContext>(options => options.UseSqlServer(builder.Configuration.GetConnectionString("TripPlanningDb")));
 
+                        var jwtSettings = builder.Configuration.GetSection("JwtSettings");
+                        var secretKey = jwtSettings["SecretKey"];
+
+                        builder.Services.AddAuthentication(options =>
+                        {
+                             options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+                             options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+                        })
+                        .AddJwtBearer(options =>
+                        {
+                             options.TokenValidationParameters = new TokenValidationParameters
+                             {
+                                    ValidateIssuer = true,
+                                    ValidateAudience = true,
+                                    ValidateLifetime = true,
+                                    ValidateIssuerSigningKey = true,
+                                    ValidIssuer = jwtSettings["Issuer"],
+                                    ValidAudience = jwtSettings["Audience"],
+                                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secretKey))
+                             };
+                        });
+
+                        builder.Services.AddAuthorization();
+
                         builder.Services
                                     .AddSingleton<StatefulServiceContext>(serviceContext)
                                     .AddSingleton<IReliableStateManager>(this.StateManager);
@@ -50,7 +77,14 @@ namespace TripPlanningService
                                     .UseContentRoot(Directory.GetCurrentDirectory())
                                     .UseServiceFabricIntegration(listener, ServiceFabricIntegrationOptions.UseUniqueServiceUrl)
                                     .UseUrls(url);
-                        builder.Services.AddControllers();
+
+
+                        builder.Services.AddControllers()
+                        .AddJsonOptions(options =>
+                        {
+                               options.JsonSerializerOptions.ReferenceHandler = System.Text.Json.Serialization.ReferenceHandler.IgnoreCycles;
+                        });
+
                         builder.Services.AddEndpointsApiExplorer();
                         builder.Services.AddSwaggerGen();
                         var app = builder.Build();
@@ -59,6 +93,7 @@ namespace TripPlanningService
                         app.UseSwagger();
                         app.UseSwaggerUI();
                         }
+                        app.UseAuthentication();
                         app.UseAuthorization();
                         app.MapControllers();
                         
