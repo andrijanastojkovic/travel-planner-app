@@ -13,6 +13,10 @@ using Microsoft.ServiceFabric.Services.Runtime;
 using Microsoft.ServiceFabric.Data;
 using Microsoft.EntityFrameworkCore;
 using UserService.Data;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.IdentityModel.Tokens;
+using System.Text;
+using UserService.Services;
 
 namespace UserService
 {
@@ -46,6 +50,31 @@ namespace UserService
                         builder.Services
                                     .AddDbContext<UserDbContext>(options => options.UseSqlServer(builder.Configuration.GetConnectionString("UserDb")));
 
+                        builder.Services.AddScoped<JwtTokenService>();
+
+                        var jwtSettings = builder.Configuration.GetSection("JwtSettings");
+                        var secretKey = jwtSettings["SecretKey"];
+                        builder.Services.AddAuthentication(options =>
+                        {
+                               options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+                               options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+                        })
+                        .AddJwtBearer(options =>
+                        {
+                            options.TokenValidationParameters = new TokenValidationParameters
+                            {
+                                ValidateIssuer = true,
+                                ValidateAudience = true,
+                                ValidateLifetime = true,
+                                ValidateIssuerSigningKey = true,
+                                ValidIssuer = jwtSettings["Issuer"],
+                                ValidAudience = jwtSettings["Audience"],
+                                IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secretKey))
+                            };
+                        });
+
+                        builder.Services.AddAuthorization();
+
                         builder.Services
                                     .AddSingleton<StatefulServiceContext>(serviceContext)
                                     .AddSingleton<IReliableStateManager>(this.StateManager);
@@ -63,6 +92,7 @@ namespace UserService
                         app.UseSwagger();
                         app.UseSwaggerUI();
                         }
+                        app.UseAuthentication();
                         app.UseAuthorization();
                         app.MapControllers();
                         
