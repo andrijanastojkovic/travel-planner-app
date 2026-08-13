@@ -43,6 +43,16 @@ namespace UserService
         {
             var builder = WebApplication.CreateBuilder();
 
+            builder.Services.AddCors(options =>
+            {
+                options.AddPolicy("AllowFrontend", policy =>
+                {
+                    policy.WithOrigins("http://localhost:5173")
+                          .AllowAnyHeader()
+                          .AllowAnyMethod();
+                });
+            });
+
             builder.Services.AddDbContext<UserDbContext>(options =>
                 options.UseSqlServer(builder.Configuration.GetConnectionString("UserDb")));
 
@@ -76,6 +86,8 @@ namespace UserService
             builder.Services.AddSwaggerGen();
 
             var app = builder.Build();
+
+            app.UseCors("AllowFrontend");
 
             app.UseSwagger();
             app.UseSwaggerUI();

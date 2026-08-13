@@ -41,6 +41,16 @@ namespace TripPlanningService
         {
             var builder = WebApplication.CreateBuilder();
 
+            builder.Services.AddCors(options =>
+            {
+                options.AddPolicy("AllowFrontend", policy =>
+                {
+                    policy.WithOrigins("http://localhost:5173")
+                          .AllowAnyHeader()
+                          .AllowAnyMethod();
+                });
+            });
+
             builder.Services.AddDbContext<TripPlanningDbContext>(options =>
                 options.UseSqlServer(builder.Configuration.GetConnectionString("TripPlanningDb")));
 
@@ -106,6 +116,8 @@ namespace TripPlanningService
             });
 
             var app = builder.Build();
+
+            app.UseCors("AllowFrontend");
 
             app.UseSwagger();
             app.UseSwaggerUI();

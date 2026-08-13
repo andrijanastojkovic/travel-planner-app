@@ -41,6 +41,16 @@ namespace ExpenseService
         {
             var builder = WebApplication.CreateBuilder();
 
+            builder.Services.AddCors(options =>
+            {
+                options.AddPolicy("AllowFrontend", policy =>
+                {
+                    policy.WithOrigins("http://localhost:5173")
+                          .AllowAnyHeader()
+                          .AllowAnyMethod();
+                });
+            });
+
             builder.Services.AddDbContext<ExpenseDbContext>(options =>
                 options.UseSqlServer(builder.Configuration.GetConnectionString("ExpenseDb")));
 
@@ -104,6 +114,8 @@ namespace ExpenseService
             });
 
             var app = builder.Build();
+
+            app.UseCors("AllowFrontend");
 
             app.UseSwagger();
             app.UseSwaggerUI();
