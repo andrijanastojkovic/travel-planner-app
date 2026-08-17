@@ -4,6 +4,7 @@ import * as tripPlanService from '../services/tripPlanService';
 import * as destinationService from '../services/destinationService';
 import * as activityService from '../services/activityService';
 import * as checklistService from '../services/checklistService';
+import * as expenseService from '../services/expenseService';
 
 function TripDetailPage() {
   const { id } = useParams();
@@ -28,19 +29,32 @@ function TripDetailPage() {
 
   const [checklistName, setChecklistName] = useState('');
 
+  const [expenses, setExpenses] = useState([]);
+  const [summary, setSummary] = useState({ totalSpent: 0, expenseCount: 0 });
+
+  const [expName, setExpName] = useState('');
+  const [expCategory, setExpCategory] = useState('Ostalo');
+  const [expAmount, setExpAmount] = useState('');
+  const [expDate, setExpDate] = useState('');
+  const [expDescription, setExpDescription] = useState('');
+
   const loadAll = async () => {
     setLoading(true);
     try {
-      const [tripData, destData, actData, checkData] = await Promise.all([
+      const [tripData, destData, actData, checkData, expData, summaryData] = await Promise.all([
         tripPlanService.getTripPlan(id),
         destinationService.getDestinations(id),
         activityService.getActivities(id),
         checklistService.getChecklistItems(id),
+        expenseService.getExpenses(id),
+        expenseService.getExpenseSummary(id),
       ]);
       setTrip(tripData);
       setDestinations(destData);
       setActivities(actData);
       setChecklistItems(checkData);
+      setExpenses(expData);
+      setSummary(summaryData);
     } catch (err) {
       setError('Neuspešno učitavanje plana.');
     } finally {
@@ -115,6 +129,35 @@ function TripDetailPage() {
   const handleDeleteChecklistItem = async (itemId) => {
     await checklistService.deleteChecklistItem(id, itemId);
     setChecklistItems(checklistItems.filter((item) => item.id !== itemId));
+  };
+
+  const handleAddExpense = async (e) => {
+    e.preventDefault();
+    await expenseService.createExpense(id, {
+    tripPlanId: id,
+    name: expName,
+    category: expCategory,
+    amount: parseFloat(expAmount) || 0,
+    date: expDate,
+    description: expDescription,
+    });
+    setExpName('');
+    setExpCategory('Ostalo');
+    setExpAmount('');
+    setExpDate('');
+    setExpDescription('');
+    const expData = await expenseService.getExpenses(id);
+    const summaryData = await expenseService.getExpenseSummary(id);
+    setExpenses(expData);
+    setSummary(summaryData);
+  };
+
+  const handleDeleteExpense = async (expId) => {
+    await expenseService.deleteExpense(id, expId);
+    const expData = await expenseService.getExpenses(id);
+    const summaryData = await expenseService.getExpenseSummary(id);
+    setExpenses(expData);
+    setSummary(summaryData);
   };
 
   if (loading) return <p>Učitavanje...</p>;
@@ -254,6 +297,67 @@ function TripDetailPage() {
             required
           />
           <button type="submit">Dodaj stavku</button>
+        </form>
+      </section>
+
+      <hr />
+
+      <section>
+        <h2>Troškovi</h2>
+        <p>
+          Ukupno potrošeno: <strong>{summary.totalSpent} €</strong>
+          {' '}(planirani budžet: {trip.budget} €, preostalo: {(trip.budget - summary.totalSpent).toFixed(2)} €)
+        </p>
+
+        <ul>
+          {expenses.map((exp) => (
+            <li key={exp.id}>
+              <strong>{exp.name}</strong> — {exp.category} — {exp.amount} € (
+              {exp.date?.slice(0, 10)})
+              <button onClick={() => handleDeleteExpense(exp.id)}>Obriši</button>
+            </li>
+          ))}
+        </ul>
+
+        <form onSubmit={handleAddExpense}>
+          <input
+            placeholder="Naziv troška"
+            value={expName}
+            onChange={(e) => setExpName(e.target.value)}
+            required
+          />
+          <select
+            value={expCategory}
+            onChange={(e) => setExpCategory(e.target.value)}
+          >
+            <option value="Prevoz">Prevoz</option>
+            <option value="Smestaj">Smeštaj</option>
+            <option value="Hrana">Hrana</option>
+            <option value="Ulaznice">Ulaznice</option>
+            <option value="Kupovina">Kupovina</option>
+            <option value="Ostalo">Ostalo</option>
+          </select>
+          <input
+            type="number"
+            placeholder="Iznos"
+            min="0"
+            step="0.01"
+            value={expAmount}
+            onChange={(e) => setExpAmount(e.target.value)}
+            required
+          />
+          <input
+            type="date"
+            value={expDate}
+            onChange={(e) => setExpDate(e.target.value)}
+            required
+          />
+          <input
+            placeholder="Opis (opciono)"
+            value={expDescription}
+            onChange={(e) => setExpDescription(e.target.value)}
+          />
+          <button type="submit">Dodaj trošak</button>
         </form>
       </section>
     </div>
