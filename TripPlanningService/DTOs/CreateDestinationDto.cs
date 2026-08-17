@@ -15,6 +15,6 @@ namespace TripPlanningService.DTOs
         public DateTime ArrivalDate { get; set; }
         public DateTime DepartureDate { get; set; }
 
-        public string Description { get; set; }
+        public string? Description { get; set; }
     }
 }

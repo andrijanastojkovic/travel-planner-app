@@ -1,6 +1,8 @@
 import { Routes, Route, Navigate } from 'react-router-dom';
 import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
+import TripListPage from './pages/TripListPage';
+import TripDetailPage from './pages/TripDetailPage';
 import { useAuth } from './context/AuthContext';
 import './App.css';
 
@@ -21,10 +23,15 @@ function App() {
         path="/trips"
         element={
           <ProtectedRoute>
-            <div>
-              <h1>Moji planovi putovanja</h1>
-              <p>(Ovde ide lista planova - pravimo je sledeće)</p>
-            </div>
+            <TripListPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/trips/:id"
+        element={
+          <ProtectedRoute>
+            <TripDetailPage />
           </ProtectedRoute>
         }
       />
