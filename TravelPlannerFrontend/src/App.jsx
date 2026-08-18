@@ -3,6 +3,7 @@ import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
 import TripListPage from './pages/TripListPage';
 import TripDetailPage from './pages/TripDetailPage';
+import SharedTripPage from './pages/SharedTripPage';
 import { useAuth } from './context/AuthContext';
 import './App.css';
 
@@ -36,6 +37,7 @@ function App() {
         }
       />
       <Route path="*" element={<Navigate to="/login" replace />} />
+      <Route path="/share/:token" element={<SharedTripPage />} />
     </Routes>
   );
 }

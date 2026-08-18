@@ -5,6 +5,7 @@ import * as destinationService from '../services/destinationService';
 import * as activityService from '../services/activityService';
 import * as checklistService from '../services/checklistService';
 import * as expenseService from '../services/expenseService';
+import * as shareService from '../services/shareService';
 
 function TripDetailPage() {
   const { id } = useParams();
@@ -37,6 +38,9 @@ function TripDetailPage() {
   const [expAmount, setExpAmount] = useState('');
   const [expDate, setExpDate] = useState('');
   const [expDescription, setExpDescription] = useState('');
+
+  const [shareLink, setShareLink] = useState('');
+  const [shareAccessType, setShareAccessType] = useState('VIEW');
 
   const loadAll = async () => {
     setLoading(true);
@@ -160,6 +164,12 @@ function TripDetailPage() {
     setSummary(summaryData);
   };
 
+  const handleCreateShareLink = async () => {
+    const data = await shareService.createShareToken(id, shareAccessType);
+    const link = `${window.location.origin}/share/${data.token}`;
+    setShareLink(link);
+  };
+
   if (loading) return <p>Učitavanje...</p>;
   if (error) return <p style={{ color: 'red' }}>{error}</p>;
   if (!trip) return null;
@@ -175,6 +185,27 @@ function TripDetailPage() {
       </p>
       <p>Budžet: {trip.budget} €</p>
       <p>Napomene: {trip.notes}</p>
+
+      <section>
+        <h2>Deljenje</h2>
+        <select
+          value={shareAccessType}
+          onChange={(e) => setShareAccessType(e.target.value)}
+        >
+          <option value="VIEW">Samo pregled</option>
+          <option value="EDIT">Pregled i uređivanje</option>
+        </select>
+        <button onClick={handleCreateShareLink}>Generiši link za deljenje</button>
+
+        {shareLink && (
+          <p>
+            Link: <input type="text" readOnly value={shareLink} style={{ width: '400px' }} />
+            <button onClick={() => navigator.clipboard.writeText(shareLink)}>
+            Kopiraj
+            </button>
+          </p>
+        )}
+      </section>
 
       <hr />
 
