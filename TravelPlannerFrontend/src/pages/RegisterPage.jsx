@@ -30,51 +30,53 @@ function RegisterPage() {
   };
 
   return (
-    <div>
-      <h2>Registracija</h2>
-      <form onSubmit={handleSubmit}>
-        <div>
-          <label htmlFor="name">Ime</label>
-          <input
-            id="name"
-            type="text"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            required
-          />
-        </div>
-        <div>
-          <label htmlFor="email">Email</label>
-          <input
-            id="email"
-            type="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            required
-          />
-        </div>
-        <div>
-          <label htmlFor="password">Lozinka</label>
-          <input
-            id="password"
-            type="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            minLength={6}
-            required
-          />
-        </div>
+    <div className="auth-page">
+      <div className="auth-card">
+        <h2>Registracija</h2>
+        <form onSubmit={handleSubmit}>
+          <div>
+            <label htmlFor="name">Ime</label>
+            <input
+              id="name"
+              type="text"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              required
+            />
+          </div>
+          <div>
+            <label htmlFor="email">Email</label>
+            <input
+              id="email"
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              required
+            />
+          </div>
+          <div>
+            <label htmlFor="password">Lozinka</label>
+            <input
+              id="password"
+              type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              minLength={6}
+              required
+            />
+          </div>
 
-        {error && <p style={{ color: 'red' }}>{error}</p>}
+          {error && <p className="error-text">{error}</p>}
 
-        <button type="submit" disabled={loading}>
-          {loading ? 'Registracija...' : 'Registruj se'}
-        </button>
-      </form>
+          <button type="submit" className="btn-primary" disabled={loading}>
+            {loading ? 'Registracija...' : 'Registruj se'}
+          </button>
+        </form>
 
-      <p>
-        Već imate nalog? <Link to="/login">Prijavite se</Link>
-      </p>
+        <p className="auth-footer">
+          Već imate nalog? <Link to="/login">Prijavite se</Link>
+        </p>
+      </div>
     </div>
   );
 }

@@ -302,9 +302,10 @@ function TripDetailPage() {
         <h2>Checklist</h2>
         <ul>
           {checklistItems.map((item) => (
-            <li key={item.id}>
+            <li key={item.id} className="checklist-item">
               <input
                 type="checkbox"
+                className="checklist-checkbox"
                 checked={item.isDone}
                 onChange={() => handleToggleChecklistItem(item.id)}
               />
@@ -315,7 +316,7 @@ function TripDetailPage() {
               >
                 {item.name}
               </span>
-              <button onClick={() => handleDeleteChecklistItem(item.id)}>Obriši</button>
+              <button className="btn-small btn-danger" onClick={() => handleDeleteChecklistItem(item.id)}>Obriši</button>
             </li>
           ))}
         </ul>
