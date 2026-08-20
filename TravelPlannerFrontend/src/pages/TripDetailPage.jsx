@@ -42,6 +42,8 @@ function TripDetailPage() {
   const [expDate, setExpDate] = useState('');
   const [expDescription, setExpDescription] = useState('');
 
+  const [actionError, setActionError] = useState('');
+
   const [shareLink, setShareLink] = useState('');
   const [shareAccessType, setShareAccessType] = useState('VIEW');
 
@@ -107,28 +109,37 @@ function TripDetailPage() {
 
   const handleSaveDestination = async (e) => {
     e.preventDefault();
+    setActionError('');
+    try {
+      const payload = {
+        name: destName,
+        location: destLocation,
+        arrivalDate: destArrival,
+        departureDate: destDeparture,
+      };
 
-    const payload = {
-      name: destName,
-      location: destLocation,
-      arrivalDate: destArrival,
-      departureDate: destDeparture,
-    };
+      if (editingDestId) {
+        await destinationService.updateDestination(id, editingDestId, payload);
+      } else {
+        await destinationService.createDestination(id, payload);
+      }
 
-    if (editingDestId) {
-      await destinationService.updateDestination(id, editingDestId, payload);
-    } else {
-      await destinationService.createDestination(id, payload);
+      cancelEditDestination();
+      const destData = await destinationService.getDestinations(id);
+      setDestinations(destData);
+    } catch (err) {
+      setActionError(err.response?.data?.message || 'Greška pri čuvanju destinacije.');
     }
-
-    cancelEditDestination();
-    const destData = await destinationService.getDestinations(id);
-    setDestinations(destData);
   };
 
   const handleDeleteDestination = async (destId) => {
-    await destinationService.deleteDestination(id, destId);
-    setDestinations(destinations.filter((d) => d.id !== destId));
+    setActionError('');
+    try {
+      await destinationService.deleteDestination(id, destId);
+      setDestinations(destinations.filter((d) => d.id !== destId));
+    } catch (err) {
+      setActionError('Greška pri brisanju destinacije.');
+    }
   };
 
   const handleAddActivity = async (e) => {
@@ -172,79 +183,113 @@ function TripDetailPage() {
 
   const handleSaveActivity = async (e) => {
     e.preventDefault();
+    setActionError('');
+    try {
+      const payload = {
+        name: actName,
+        date: actDate,
+        time: actTime ? `${actTime}:00` : null,
+        location: actLocation,
+        estimatedCost: parseFloat(actCost) || 0,
+        status: actStatus,
+      };
 
-    const payload = {
-      name: actName,
-      date: actDate,
-      time: actTime ? `${actTime}:00` : null,
-      location: actLocation,
-      estimatedCost: parseFloat(actCost) || 0,
-      status: actStatus,
-    };
+      if (editingActId) {
+        await activityService.updateActivity(id, editingActId, payload);
+      } else {
+        await activityService.createActivity(id, payload);
+      }
 
-    if (editingActId) {
-      await activityService.updateActivity(id, editingActId, payload);
-    } else {
-      await activityService.createActivity(id, payload);
+      cancelEditActivity();
+      const actData = await activityService.getActivities(id);
+      setActivities(actData);
+    } catch (err) {
+      setActionError(err.response?.data?.message || 'Greška pri čuvanju aktivnosti.');
     }
-
-    cancelEditActivity();
-    const actData = await activityService.getActivities(id);
-    setActivities(actData);
-  }
+  };
 
   const handleDeleteActivity = async (actId) => {
-    await activityService.deleteActivity(id, actId);
-    setActivities(activities.filter((a) => a.id !== actId));
+    setActionError('');
+    try {
+      await activityService.deleteActivity(id, actId);
+      setActivities(activities.filter((a) => a.id !== actId));
+    } catch (err) {
+      setActionError('Greška pri brisanju aktivnosti.');
+    }
   };
 
   const handleAddChecklistItem = async (e) => {
     e.preventDefault();
-    await checklistService.createChecklistItem(id, { name: checklistName });
-    setChecklistName('');
-    const checkData = await checklistService.getChecklistItems(id);
-    setChecklistItems(checkData);
+    setActionError('');
+    try {
+      await checklistService.createChecklistItem(id, { name: checklistName });
+      setChecklistName('');
+      const checkData = await checklistService.getChecklistItems(id);
+      setChecklistItems(checkData);
+    } catch (err) {
+      setActionError('Greška pri dodavanju stavke u checklistu.');
+    }
   };
 
   const handleToggleChecklistItem = async (itemId) => {
-    const updated = await checklistService.toggleChecklistItem(id, itemId);
-    setChecklistItems(
-      checklistItems.map((item) => (item.id === itemId ? updated : item))
-    );
+    setActionError('');
+    try {
+      const updated = await checklistService.toggleChecklistItem(id, itemId);
+      setChecklistItems(
+        checklistItems.map((item) => (item.id === itemId ? updated : item))
+      );
+    } catch (err) {
+      setActionError('Greška pri ažuriranju stavke.');
+    }
   };
 
   const handleDeleteChecklistItem = async (itemId) => {
-    await checklistService.deleteChecklistItem(id, itemId);
-    setChecklistItems(checklistItems.filter((item) => item.id !== itemId));
+    setActionError('');
+    try {
+      await checklistService.deleteChecklistItem(id, itemId);
+      setChecklistItems(checklistItems.filter((item) => item.id !== itemId));
+    } catch (err) {
+      setActionError('Greška pri brisanju stavke.');
+    }
   };
 
   const handleAddExpense = async (e) => {
     e.preventDefault();
-    await expenseService.createExpense(id, {
-    tripPlanId: id,
-    name: expName,
-    category: expCategory,
-    amount: parseFloat(expAmount) || 0,
-    date: expDate,
-    description: expDescription,
-    });
-    setExpName('');
-    setExpCategory('Ostalo');
-    setExpAmount('');
-    setExpDate('');
-    setExpDescription('');
-    const expData = await expenseService.getExpenses(id);
-    const summaryData = await expenseService.getExpenseSummary(id);
-    setExpenses(expData);
-    setSummary(summaryData);
+    setActionError('');
+    try {
+      await expenseService.createExpense(id, {
+        tripPlanId: id,
+        name: expName,
+        category: expCategory,
+        amount: parseFloat(expAmount) || 0,
+        date: expDate,
+        description: expDescription,
+      });
+      setExpName('');
+      setExpCategory('Ostalo');
+      setExpAmount('');
+      setExpDate('');
+      setExpDescription('');
+      const expData = await expenseService.getExpenses(id);
+      const summaryData = await expenseService.getExpenseSummary(id);
+      setExpenses(expData);
+      setSummary(summaryData);
+    } catch (err) {
+      setActionError(err.response?.data?.message || 'Greška pri dodavanju troška.');
+    }
   };
 
   const handleDeleteExpense = async (expId) => {
-    await expenseService.deleteExpense(id, expId);
-    const expData = await expenseService.getExpenses(id);
-    const summaryData = await expenseService.getExpenseSummary(id);
-    setExpenses(expData);
-    setSummary(summaryData);
+    setActionError('');
+    try {
+      await expenseService.deleteExpense(id, expId);
+      const expData = await expenseService.getExpenses(id);
+      const summaryData = await expenseService.getExpenseSummary(id);
+      setExpenses(expData);
+      setSummary(summaryData);
+    } catch (err) {
+      setActionError('Greška pri brisanju troška.');
+    }
   };
 
   const handleCreateShareLink = async () => {
@@ -268,6 +313,8 @@ function TripDetailPage() {
       </p>
       <p>Budžet: {trip.budget} €</p>
       <p>Napomene: {trip.notes}</p>
+
+      {actionError && <p className="error-text">{actionError}</p>}
 
       <section>
         <h2>Deljenje</h2>
