@@ -383,3 +383,12 @@ li > strong {
 .checklist-item span {
   flex: 1;
 }
+
+.success-text {
+  color: #0d7c8c;
+  background: var(--accent-bg);
+  padding: 10px 14px;
+  border-radius: 8px;
+  font-size: 14px;
+  margin: 0;
+}

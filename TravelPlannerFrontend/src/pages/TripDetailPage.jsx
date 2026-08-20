@@ -44,6 +44,8 @@ function TripDetailPage() {
 
   const [actionError, setActionError] = useState('');
 
+  const [successMessage, setSuccessMessage] = useState('');
+
   const [shareLink, setShareLink] = useState('');
   const [shareAccessType, setShareAccessType] = useState('VIEW');
 
@@ -125,6 +127,7 @@ function TripDetailPage() {
       }
 
       cancelEditDestination();
+      showSuccess(editingDestId ? 'Destinacija uspešno izmenjena.' : 'Destinacija uspešno dodata.');
       const destData = await destinationService.getDestinations(id);
       setDestinations(destData);
     } catch (err) {
@@ -137,6 +140,7 @@ function TripDetailPage() {
     try {
       await destinationService.deleteDestination(id, destId);
       setDestinations(destinations.filter((d) => d.id !== destId));
+      showSuccess('Destinacija uspešno obrisana.');
     } catch (err) {
       setActionError('Greška pri brisanju destinacije.');
     }
@@ -201,6 +205,7 @@ function TripDetailPage() {
       }
 
       cancelEditActivity();
+      showSuccess(editingActId ? 'Aktivnost uspešno izmenjena.' : 'Aktivnost uspešno dodata.');
       const actData = await activityService.getActivities(id);
       setActivities(actData);
     } catch (err) {
@@ -213,6 +218,7 @@ function TripDetailPage() {
     try {
       await activityService.deleteActivity(id, actId);
       setActivities(activities.filter((a) => a.id !== actId));
+      showSuccess('Aktivnost uspešno obrisana.');
     } catch (err) {
       setActionError('Greška pri brisanju aktivnosti.');
     }
@@ -226,6 +232,7 @@ function TripDetailPage() {
       setChecklistName('');
       const checkData = await checklistService.getChecklistItems(id);
       setChecklistItems(checkData);
+      showSuccess('Stavka uspešno dodata.');
     } catch (err) {
       setActionError('Greška pri dodavanju stavke u checklistu.');
     }
@@ -248,6 +255,7 @@ function TripDetailPage() {
     try {
       await checklistService.deleteChecklistItem(id, itemId);
       setChecklistItems(checklistItems.filter((item) => item.id !== itemId));
+      showSuccess('Stavka uspešno obrisana.');
     } catch (err) {
       setActionError('Greška pri brisanju stavke.');
     }
@@ -274,6 +282,7 @@ function TripDetailPage() {
       const summaryData = await expenseService.getExpenseSummary(id);
       setExpenses(expData);
       setSummary(summaryData);
+      showSuccess('Trošak uspešno dodat.');
     } catch (err) {
       setActionError(err.response?.data?.message || 'Greška pri dodavanju troška.');
     }
@@ -287,9 +296,15 @@ function TripDetailPage() {
       const summaryData = await expenseService.getExpenseSummary(id);
       setExpenses(expData);
       setSummary(summaryData);
+      showSuccess('Trošak uspešno obrisan.');
     } catch (err) {
       setActionError('Greška pri brisanju troška.');
     }
+  };
+
+  const showSuccess = (message) => {
+    setSuccessMessage(message);
+    setTimeout(() => setSuccessMessage(''), 3000);
   };
 
   const handleCreateShareLink = async () => {
@@ -315,6 +330,7 @@ function TripDetailPage() {
       <p>Napomene: {trip.notes}</p>
 
       {actionError && <p className="error-text">{actionError}</p>}
+      {successMessage && <p className="success-text">{successMessage}</p>}
 
       <section>
         <h2>Deljenje</h2>

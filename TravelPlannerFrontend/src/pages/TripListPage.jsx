@@ -17,6 +17,8 @@ function TripListPage() {
   const [notes, setNotes] = useState('');
   const [formError, setFormError] = useState('');
 
+  const [successMessage, setSuccessMessage] = useState('');
+
   const { user, logout } = useAuth();
 
   const loadTrips = async () => {
@@ -34,6 +36,11 @@ function TripListPage() {
   useEffect(() => {
     loadTrips();
   }, []);
+
+  const showSuccess = (message) => {
+    setSuccessMessage(message);
+    setTimeout(() => setSuccessMessage(''), 3000);
+  };
 
   const handleCreate = async (e) => {
     e.preventDefault();
@@ -57,6 +64,7 @@ function TripListPage() {
       setNotes('');
       setShowForm(false);
 
+      showSuccess('Plan uspešno kreiran.');
       loadTrips();
     } catch (err) {
       setFormError(
@@ -73,6 +81,7 @@ function TripListPage() {
 
     try {
       await tripPlanService.deleteTripPlan(tripId);
+      showSuccess('Plan uspešno obrisan.');
       loadTrips();
     } catch (err) {
       setError('Neuspešno brisanje plana.');
@@ -169,6 +178,7 @@ function TripListPage() {
 
         {loading && <p>Učitavanje...</p>}
         {error && <p className="error-text">{error}</p>}
+        {successMessage && <p className="success-text">{successMessage}</p>}
 
         {!loading && trips.length === 0 && <p>Nemate još planova putovanja.</p>}
 
