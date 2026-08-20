@@ -65,6 +65,20 @@ function TripListPage() {
     }
   };
 
+  const handleDeleteTrip = async (tripId, tripName) => {
+    const confirmed = window.confirm(
+      `Da li ste sigurni da želite da obrišete plan "${tripName}"? Ova akcija je nepovratna.`
+    );
+    if (!confirmed) return;
+
+    try {
+      await tripPlanService.deleteTripPlan(tripId);
+      loadTrips();
+    } catch (err) {
+      setError('Neuspešno brisanje plana.');
+    }
+  };
+
   return (
     <div className="page">
       <div className="container">
@@ -160,13 +174,21 @@ function TripListPage() {
 
         <div className="trip-list">
           {trips.map((trip) => (
-            <Link to={`/trips/${trip.id}`} key={trip.id} className="card trip-card">
-              <div className="trip-card-name">{trip.name}</div>
-              <div className="trip-card-dates">
-                {trip.startDate?.slice(0, 10)} — {trip.endDate?.slice(0, 10)}
-              </div>
-              <div className="trip-card-budget">{trip.budget} €</div>
-            </Link>
+            <div key={trip.id} className="card trip-card">
+              <Link to={`/trips/${trip.id}`} className="trip-card-link">
+                <div className="trip-card-name">{trip.name}</div>
+                <div className="trip-card-dates">
+                  {trip.startDate?.slice(0, 10)} — {trip.endDate?.slice(0, 10)}
+                </div>
+                <div className="trip-card-budget">{trip.budget} €</div>
+              </Link>
+              <button
+                className="btn-small btn-danger"
+                onClick={() => handleDeleteTrip(trip.id, trip.name)}
+              >
+                Obriši
+              </button>
+            </div>
           ))}
         </div>
       </div>

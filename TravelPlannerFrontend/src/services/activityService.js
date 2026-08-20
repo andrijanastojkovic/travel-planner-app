@@ -13,3 +13,8 @@ export const createActivity = async (tripPlanId, activity) => {
 export const deleteActivity = async (tripPlanId, id) => {
   await tripApi.delete(`/api/tripplan/${tripPlanId}/activity/${id}`);
 };
+
+export const updateActivity = async (tripPlanId, id, activity) => {
+  const response = await tripApi.put(`/api/tripplan/${tripPlanId}/activity/${id}`, activity);
+  return response.data;
+};

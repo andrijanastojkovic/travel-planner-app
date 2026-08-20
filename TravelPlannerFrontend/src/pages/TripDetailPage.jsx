@@ -21,12 +21,15 @@ function TripDetailPage() {
   const [destLocation, setDestLocation] = useState('');
   const [destArrival, setDestArrival] = useState('');
   const [destDeparture, setDestDeparture] = useState('');
+  const [editingDestId, setEditingDestId] = useState(null);
 
   const [actName, setActName] = useState('');
   const [actDate, setActDate] = useState('');
   const [actTime, setActTime] = useState('');
   const [actLocation, setActLocation] = useState('');
   const [actCost, setActCost] = useState('');
+  const [actStatus, setActStatus] = useState('Planirano');
+  const [editingActId, setEditingActId] = useState(null);
 
   const [checklistName, setChecklistName] = useState('');
 
@@ -86,6 +89,43 @@ function TripDetailPage() {
     setDestinations(destData);
   };
 
+  const startEditDestination = (dest) => {
+    setEditingDestId(dest.id);
+    setDestName(dest.name);
+    setDestLocation(dest.location);
+    setDestArrival(dest.arrivalDate?.slice(0, 10));
+    setDestDeparture(dest.departureDate?.slice(0, 10));
+  };
+
+  const cancelEditDestination = () => {
+    setEditingDestId(null);
+    setDestName('');
+    setDestLocation('');
+    setDestArrival('');
+    setDestDeparture('');
+  };
+
+  const handleSaveDestination = async (e) => {
+    e.preventDefault();
+
+    const payload = {
+      name: destName,
+      location: destLocation,
+      arrivalDate: destArrival,
+      departureDate: destDeparture,
+    };
+
+    if (editingDestId) {
+      await destinationService.updateDestination(id, editingDestId, payload);
+    } else {
+      await destinationService.createDestination(id, payload);
+    }
+
+    cancelEditDestination();
+    const destData = await destinationService.getDestinations(id);
+    setDestinations(destData);
+  };
+
   const handleDeleteDestination = async (destId) => {
     await destinationService.deleteDestination(id, destId);
     setDestinations(destinations.filter((d) => d.id !== destId));
@@ -109,6 +149,49 @@ function TripDetailPage() {
     const actData = await activityService.getActivities(id);
     setActivities(actData);
   };
+
+  const startEditActivity = (act) => {
+    setEditingActId(act.id);
+    setActName(act.name);
+    setActDate(act.date?.slice(0, 10));
+    setActTime(act.time ? act.time.slice(0, 5) : '');
+    setActLocation(act.location || '');
+    setActCost(act.estimatedCost);
+    setActStatus(act.status);
+  };
+
+  const cancelEditActivity = () => {
+    setEditingActId(null);
+    setActName('');
+    setActDate('');
+    setActTime('');
+    setActLocation('');
+    setActCost('');
+    setActStatus('Planirano');
+  };
+
+  const handleSaveActivity = async (e) => {
+    e.preventDefault();
+
+    const payload = {
+      name: actName,
+      date: actDate,
+      time: actTime ? `${actTime}:00` : null,
+      location: actLocation,
+      estimatedCost: parseFloat(actCost) || 0,
+      status: actStatus,
+    };
+
+    if (editingActId) {
+      await activityService.updateActivity(id, editingActId, payload);
+    } else {
+      await activityService.createActivity(id, payload);
+    }
+
+    cancelEditActivity();
+    const actData = await activityService.getActivities(id);
+    setActivities(actData);
+  }
 
   const handleDeleteActivity = async (actId) => {
     await activityService.deleteActivity(id, actId);
@@ -216,12 +299,15 @@ function TripDetailPage() {
             <li key={d.id}>
               <strong>{d.name}</strong> — {d.location} (
               {d.arrivalDate?.slice(0, 10)} — {d.departureDate?.slice(0, 10)})
-              <button onClick={() => handleDeleteDestination(d.id)}>Obriši</button>
+              <div>
+                <button className="btn-small" onClick={() => startEditDestination(d)}>Izmeni</button>
+                <button className="btn-small btn-danger" onClick={() => handleDeleteDestination(d.id)}>Obriši</button>
+              </div>
             </li>
           ))}
         </ul>
 
-        <form onSubmit={handleAddDestination}>
+        <form onSubmit={handleSaveDestination}>
           <input
             placeholder="Naziv"
             value={destName}
@@ -245,7 +331,12 @@ function TripDetailPage() {
             onChange={(e) => setDestDeparture(e.target.value)}
             required
           />
-          <button type="submit">Dodaj destinaciju</button>
+          <button type="submit" className="btn-primary">
+            {editingDestId ? 'Sačuvaj izmene' : 'Dodaj destinaciju'}
+          </button>
+          {editingDestId && (
+            <button type="button" onClick={cancelEditDestination}>Otkaži</button>
+          )}
         </form>
       </section>
 
@@ -258,12 +349,15 @@ function TripDetailPage() {
             <li key={a.id}>
               <strong>{a.name}</strong> — {a.date?.slice(0, 10)}{' '}
               {a.time ? `u ${a.time}` : ''} ({a.status}) — {a.estimatedCost} €
-              <button onClick={() => handleDeleteActivity(a.id)}>Obriši</button>
+              <div>
+                <button className="btn-small" onClick={() => startEditActivity(a)}>Izmeni</button>
+                <button className="btn-small btn-danger" onClick={() => handleDeleteActivity(a.id)}>Obriši</button>
+              </div>
             </li>
           ))}
         </ul>
 
-        <form onSubmit={handleAddActivity}>
+        <form onSubmit={handleSaveActivity}>
           <input
             placeholder="Naziv aktivnosti"
             value={actName}
@@ -292,7 +386,18 @@ function TripDetailPage() {
             value={actCost}
             onChange={(e) => setActCost(e.target.value)}
           />
-          <button type="submit">Dodaj aktivnost</button>
+          <select value ={actStatus} onChange={(e) => setActStatus(e.target.value)}>
+            <option value="Planirano">Planirano</option>
+            <option value="Rezervisano">Rezervisano</option>
+            <option value="Zavrseno">Završeno</option>
+            <option value="Otkazano">Otkazano</option>
+          </select>
+          <button type="submit" className="btn-primary">
+            {editingActId ? 'Sačuvaj izmene' : 'Dodaj aktivnost'}
+          </button>
+          {editingActId && (
+            <button type="button" onClick={cancelEditActivity}>Otkaži</button>
+          )}
         </form>
       </section>
 

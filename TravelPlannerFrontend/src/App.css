@@ -326,12 +326,20 @@ li > strong {
 }
 
 .trip-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.trip-card-link {
   display: grid;
   grid-template-columns: 1fr auto auto;
   align-items: center;
   gap: 20px;
   text-decoration: none;
   color: inherit;
+  flex: 1;
 }
 
 .trip-card-name {
