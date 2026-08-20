@@ -70,6 +70,9 @@ namespace TripPlanningService.Controllers
             var plan = await GetOwnedTripPlanOrNull(tripPlanId);
             if (plan == null) return NotFound();
 
+            if (request.DepartureDate < request.ArrivalDate)
+                return BadRequest(new { message = "Datum odlaska ne može biti pre datuma dolaska." });
+
             var destination = new Destination
             {
                 TripPlanId = tripPlanId,
@@ -103,6 +106,9 @@ namespace TripPlanningService.Controllers
         {
             var plan = await GetOwnedTripPlanOrNull(tripPlanId);
             if (plan == null) return NotFound();
+
+            if (request.DepartureDate < request.ArrivalDate)
+                return BadRequest(new { message = "Datum odlaska ne može biti pre datuma dolaska." });
 
             var destination = await _context.Destinations
                 .FirstOrDefaultAsync(d => d.Id == id && d.TripPlanId == tripPlanId);
