@@ -1,9 +1,11 @@
 import { useState, useEffect } from 'react';
 import * as activityService from '../../services/activityService';
+import ActivityCalendar from './ActivityCalendar';
 
 function ActivitiesSection({ tripId, onError, onSuccess }) {
   const [activities, setActivities] = useState([]);
   const [editingActId, setEditingActId] = useState(null);
+  const [view, setView] = useState('list');
 
   const [actName, setActName] = useState('');
   const [actDate, setActDate] = useState('');
@@ -79,21 +81,60 @@ function ActivitiesSection({ tripId, onError, onSuccess }) {
     }
   };
 
+  const groupedByDate = {};
+  activities.forEach((a) => {
+    const dateKey = a.date?.slice(0, 10) || 'Nepoznat datum';
+    if (!groupedByDate[dateKey]) groupedByDate[dateKey] = [];
+    groupedByDate[dateKey].push(a);
+  });
+  const sortedDates = Object.keys(groupedByDate).sort();
+
   return (
     <section>
       <h2>Aktivnosti</h2>
-      <ul>
-        {activities.map((a) => (
-          <li key={a.id}>
-            <strong>{a.name}</strong> — {a.date?.slice(0, 10)}{' '}
-            {a.time ? `u ${a.time}` : ''} ({a.status}) — {a.estimatedCost} €
-            <div>
-              <button className="btn-small" onClick={() => startEdit(a)}>Izmeni</button>
-              <button className="btn-small btn-danger" onClick={() => handleDelete(a.id)}>Obriši</button>
+
+      <div className="view-toggle">
+        <button
+          type="button"
+          className={view === 'list' ? 'btn-primary btn-small' : 'btn-small'}
+          onClick={() => setView('list')}
+        >
+          Lista
+        </button>
+        <button
+          type="button"
+          className={view === 'calendar' ? 'btn-primary btn-small' : 'btn-small'}
+          onClick={() => setView('calendar')}
+        >
+          Kalendar
+        </button>
+      </div>
+
+      {view === 'list' ? (
+        sortedDates.length === 0 ? (
+          <p>Nema unetih aktivnosti.</p>
+        ) : (
+          sortedDates.map((dateKey) => (
+            <div key={dateKey} className="activity-date-group">
+              <div className="activity-date-heading">{dateKey}</div>
+              <ul>
+                {groupedByDate[dateKey].map((a) => (
+                  <li key={a.id}>
+                    <strong>{a.name}</strong>{' '}
+                    {a.time ? `u ${a.time}` : ''} ({a.status}) — {a.estimatedCost} €
+                    <div>
+                      <button className="btn-small" onClick={() => startEdit(a)}>Izmeni</button>
+                      <button className="btn-small btn-danger" onClick={() => handleDelete(a.id)}>Obriši</button>
+                    </div>
+                  </li>
+                ))}
+              </ul>
             </div>
-          </li>
-        ))}
-      </ul>
+          ))
+        )
+      ) : (
+        <ActivityCalendar activities={activities} onSelectActivity={startEdit} />
+      )}
 
       <form onSubmit={handleSave}>
         <input

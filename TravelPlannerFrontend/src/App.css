@@ -392,3 +392,96 @@ li > strong {
   font-size: 14px;
   margin: 0;
 }
+
+/* Calendar */
+.calendar {
+  margin-bottom: 20px;
+}
+
+.calendar-header {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  margin-bottom: 12px;
+  font-size: 15px;
+}
+
+.calendar-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 4px;
+}
+
+.calendar-weekdays {
+  margin-bottom: 4px;
+}
+
+.calendar-weekday {
+  text-align: center;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text);
+  padding: 4px 0;
+}
+
+.calendar-cell {
+  min-height: 70px;
+  background: var(--bg-subtle);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 4px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.calendar-cell-empty {
+  background: transparent;
+  border: none;
+}
+
+.calendar-day-number {
+  font-size: 12px;
+  color: var(--text);
+  margin-bottom: 2px;
+}
+
+.calendar-activity {
+  font-size: 11px;
+  padding: 2px 6px;
+  border-radius: 5px;
+  background: var(--accent);
+  color: #fff;
+  border: none;
+  cursor: pointer;
+  text-align: left;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  width: 100%;
+}
+
+.calendar-activity:hover {
+  background: var(--accent-dark);
+}
+
+/* Grouped activity list */
+.activity-date-group {
+  margin-bottom: 16px;
+}
+
+.activity-date-heading {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--accent-dark);
+  margin-bottom: 8px;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+}
+
+.view-toggle {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 16px;
+}
