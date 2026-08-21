@@ -1,13 +1,14 @@
 import { tripApi } from './api';
+import { createTripPlan as toTripPlan } from '../models/TripPlan';
 
 export const getTripPlans = async () => {
   const response = await tripApi.get('/api/tripplans');
-  return response.data;
+  return response.data.map(toTripPlan);
 };
 
 export const getTripPlan = async (id) => {
   const response = await tripApi.get(`/api/tripplans/${id}`);
-  return response.data;
+  return toTripPlan(response.data);
 };
 
 export const createTripPlan = async (tripPlan) => {

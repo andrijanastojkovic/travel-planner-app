@@ -1,8 +1,9 @@
 import { expenseApi } from './api';
+import { createExpense as toExpense } from '../models/Expense';
 
 export const getExpenses = async (tripPlanId) => {
   const response = await expenseApi.get(`/api/tripplans/${tripPlanId}/expenses`);
-  return response.data;
+  return response.data.map(toExpense);
 };
 
 export const getExpenseSummary = async (tripPlanId) => {

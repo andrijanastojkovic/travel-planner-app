@@ -1,8 +1,9 @@
 import { tripApi } from './api';
+import { createChecklistItem as toChecklistItem } from '../models/ChecklistItem';
 
 export const getChecklistItems = async (tripPlanId) => {
   const response = await tripApi.get(`/api/tripplans/${tripPlanId}/checklist-items`);
-  return response.data;
+  return response.data.map(toChecklistItem);
 };
 
 export const createChecklistItem = async (tripPlanId, item) => {

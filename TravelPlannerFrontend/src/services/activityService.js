@@ -1,8 +1,9 @@
 import { tripApi } from './api';
+import { createActivity as toActivity } from '../models/Activity';
 
 export const getActivities = async (tripPlanId) => {
   const response = await tripApi.get(`/api/tripplans/${tripPlanId}/activities`);
-  return response.data;
+  return response.data.map(toActivity);
 };
 
 export const createActivity = async (tripPlanId, activity) => {

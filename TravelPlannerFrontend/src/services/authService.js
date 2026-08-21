@@ -1,4 +1,5 @@
 import { userApi } from './api';
+import { createUser as toUser } from '../models/User';
 
 export const register = async (name, email, password) => {
   const response = await userApi.post('/api/Auth/register', {
@@ -6,7 +7,10 @@ export const register = async (name, email, password) => {
     email,
     password,
   });
-  return response.data;
+  return {
+    ...toUser(response.data),
+    token: response.data.token,
+  };
 };
 
 export const login = async (email, password) => {
@@ -14,5 +18,8 @@ export const login = async (email, password) => {
     email,
     password,
   });
-  return response.data;
+  return {
+    ...toUser(response.data),
+    token: response.data.token,
+  };
 };
