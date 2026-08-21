@@ -12,7 +12,7 @@ using TripPlanningService.Models;
 namespace TripPlanningService.Controllers
 {
     [ApiController]
-    [Route("api/[controller]")]
+    [Route("api/tripplans")]
     [Authorize]
     public class TripPlanController : ControllerBase
     {

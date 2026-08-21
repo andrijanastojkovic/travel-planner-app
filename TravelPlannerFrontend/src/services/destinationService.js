@@ -1,20 +1,20 @@
 import { tripApi } from './api';
 
 export const getDestinations = async (tripPlanId) => {
-  const response = await tripApi.get(`/api/tripplan/${tripPlanId}/destination`);
+  const response = await tripApi.get(`/api/tripplans/${tripPlanId}/destinations`);
   return response.data;
 };
 
 export const createDestination = async (tripPlanId, destination) => {
-  const response = await tripApi.post(`/api/tripplan/${tripPlanId}/destination`, destination);
+  const response = await tripApi.post(`/api/tripplans/${tripPlanId}/destinations`, destination);
   return response.data;
 };
 
 export const deleteDestination = async (tripPlanId, id) => {
-  await tripApi.delete(`/api/tripplan/${tripPlanId}/destination/${id}`);
+  await tripApi.delete(`/api/tripplans/${tripPlanId}/destinations/${id}`);
 };
 
 export const updateDestination = async (tripPlanId, id, destination) => {
-  const response = await tripApi.put(`/api/tripplan/${tripPlanId}/destination/${id}`, destination);
+  const response = await tripApi.put(`/api/tripplans/${tripPlanId}/destinations/${id}`, destination);
   return response.data;
 };

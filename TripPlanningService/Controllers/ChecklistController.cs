@@ -12,7 +12,7 @@ using TripPlanningService.Models;
 namespace TripPlanningService.Controllers
 {
     [ApiController]
-    [Route("api/tripplan/{tripPlanId}/[controller]")]
+    [Route("api/tripplans/{tripPlanId}/checklist-items")]
     [Authorize]
     public class ChecklistController : ControllerBase
     {

@@ -1,7 +1,7 @@
 import { tripApi } from './api';
 
 export const createShareToken = async (tripPlanId, accessType) => {
-  const response = await tripApi.post(`/api/tripplan/${tripPlanId}/share`, {
+  const response = await tripApi.post(`/api/tripplans/${tripPlanId}/share`, {
     accessType,
   });
   return response.data;

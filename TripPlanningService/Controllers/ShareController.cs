@@ -30,7 +30,7 @@ namespace TripPlanningService.Controllers
         }
 
         // POST: api/tripplan/{tripPlanId}/share  (vlasnik generiše link)
-        [HttpPost("tripplan/{tripPlanId}/share")]
+        [HttpPost("tripplans/{tripPlanId}/share")]
         [Authorize]
         public async Task<ActionResult> CreateShareToken(Guid tripPlanId, CreateShareTokenDto request)
         {

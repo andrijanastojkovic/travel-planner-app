@@ -11,7 +11,7 @@ using ExpenseService.Models;
 namespace ExpenseService.Controllers
 {
     [ApiController]
-    [Route("api/tripplan/{tripPlanId}/[controller]")]
+    [Route("api/tripplans/{tripPlanId}/expenses")]
     [Authorize]
     public class ExpenseController : ControllerBase
     {
