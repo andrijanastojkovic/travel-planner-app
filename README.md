@@ -96,6 +96,7 @@ VITE_EXPENSE_SERVICE_URL=http://localhost:8845
 
 ## Struktura projekta
 
+```
 TravelPlannerApp/
 ├── UserService/            # Autentikacija (stateful)
 ├── TripPlanningService/    # Planovi, destinacije,         aktivnosti, checklist, deljenje (stateful)
@@ -108,6 +109,7 @@ TravelPlannerApp/
         ├── models/         # Modeli podataka na frontendu
         ├── pages/          # Stranice aplikacije
         └── services/       # HTTP komunikacija sa backend servisima
+```
 
 ## Autor
 
