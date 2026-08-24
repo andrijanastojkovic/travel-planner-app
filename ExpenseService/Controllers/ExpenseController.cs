@@ -122,5 +122,20 @@ namespace ExpenseService.Controllers
 
             return NoContent();
         }
+
+        // DELETE: api/tripplans/{tripPlanId}/expenses/all
+        [HttpDelete("all")]
+        [AllowAnonymous]
+        public async Task<ActionResult> DeleteAllExpensesForTrip(Guid tripPlanId)
+        {
+            var expenses = await _context.Expenses
+                .Where(e => e.TripPlanId == tripPlanId)
+                .ToListAsync();
+
+            _context.Expenses.RemoveRange(expenses);
+            await _context.SaveChangesAsync();
+
+            return NoContent();
+        }
     }
 }

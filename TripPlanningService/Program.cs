@@ -54,6 +54,8 @@ namespace TripPlanningService
             builder.Services.AddDbContext<TripPlanningDbContext>(options =>
                 options.UseSqlServer(builder.Configuration.GetConnectionString("TripPlanningDb")));
 
+            builder.Services.AddHttpClient();
+
             var jwtSettings = builder.Configuration.GetSection("JwtSettings");
             var secretKey = jwtSettings["SecretKey"];
 

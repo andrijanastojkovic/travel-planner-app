@@ -8,6 +8,8 @@ using Microsoft.EntityFrameworkCore;
 using TripPlanningService.Data;
 using TripPlanningService.DTOs;
 using TripPlanningService.Models;
+using System.Net.Http;
+using Microsoft.Extensions.Configuration;
 
 namespace TripPlanningService.Controllers
 {
@@ -17,10 +19,14 @@ namespace TripPlanningService.Controllers
     public class TripPlanController : ControllerBase
     {
         private readonly TripPlanningDbContext _context;
+        private readonly IHttpClientFactory _httpClientFactory;
+        private readonly IConfiguration _configuration;
 
-        public TripPlanController(TripPlanningDbContext context)
+        public TripPlanController(TripPlanningDbContext context, IHttpClientFactory httpClientFactory, IConfiguration configuration)
         {
             _context = context;
+            _httpClientFactory = httpClientFactory;
+            _configuration = configuration;
         }
 
         private Guid GetUserId()
@@ -161,6 +167,17 @@ namespace TripPlanningService.Controllers
 
             if (plan.UserId != userId)
                 return Forbid();
+
+            try
+            {
+                var expenseServiceUrl = _configuration["ExternalServices:ExpenseServiceUrl"];
+                var client = _httpClientFactory.CreateClient();
+                await client.DeleteAsync($"{expenseServiceUrl}/api/tripplans/{id}/expenses/all");
+            }
+            catch
+            {
+                // Ako ExpenseService nije dostupan, nastavljamo sa brisanjem plana.
+            }
 
             _context.TripPlans.Remove(plan);
             await _context.SaveChangesAsync();
