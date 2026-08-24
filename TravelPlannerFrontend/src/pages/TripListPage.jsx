@@ -98,6 +98,7 @@ function TripListPage() {
           </div>
           <div className="user-pill">
             <span>{user?.name}</span>
+            {user?.role === 'Admin' && <Link to="/admin">Admin panel</Link>}
             <button className="btn-small" onClick={logout}>Odjavi se</button>
           </div>
         </div>

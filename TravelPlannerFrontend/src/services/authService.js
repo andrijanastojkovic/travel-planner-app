@@ -23,3 +23,8 @@ export const login = async (email, password) => {
     token: response.data.token,
   };
 };
+
+export const getAllUsers = async () => {
+  const response = await userApi.get('/api/Auth/users');
+  return response.data;
+};

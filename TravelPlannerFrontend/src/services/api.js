@@ -22,3 +22,4 @@ const attachToken = (config) => {
 
 tripApi.interceptors.request.use(attachToken);
 expenseApi.interceptors.request.use(attachToken);
+userApi.interceptors.request.use(attachToken);

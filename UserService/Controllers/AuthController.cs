@@ -8,6 +8,7 @@ using UserService.DTOs;
 using UserService.Models;
 using UserService.Services;
 using BCrypt.Net;
+using Microsoft.AspNetCore.Authorization;
 
 namespace UserService.Controllers
 {
@@ -79,6 +80,24 @@ namespace UserService.Controllers
                 Role = user.Role.ToString(),
                 Token = token
             });
+        }
+
+        [HttpGet("users")]
+        [Authorize(Roles = "Admin")]
+        public async Task<ActionResult> GetAllUsers()
+        {
+            var users = await _context.Users
+                .Select(u => new
+                {
+                    u.Id,
+                    u.Name,
+                    u.Email,
+                    Role = u.Role.ToString(),
+                    u.CreatedAt
+                })
+                .ToListAsync();
+
+            return Ok(users);
         }
     }
 }
