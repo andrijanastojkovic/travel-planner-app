@@ -61,6 +61,28 @@ namespace TripPlanningService.Controllers
             return Ok(plans);
         }
 
+        [HttpGet("all")]
+        [Authorize(Roles = "Admin")]
+        public async Task<ActionResult> GetAllTripPlans()
+        {
+            var plans = await _context.TripPlans
+                .Select(t => new TripPlanDto
+                {
+                    Id = t.Id,
+                    UserId = t.UserId,
+                    Name = t.Name,
+                    Description = t.Description,
+                    StartDate = t.StartDate,
+                    EndDate = t.EndDate,
+                    Budget = t.Budget,
+                    Notes = t.Notes,
+                    CreatedAt = t.CreatedAt
+                })
+                .ToListAsync();
+
+            return Ok(plans);
+        }
+
         // GET: api/TripPlan/{id}
         [HttpGet("{id}")]
         public async Task<ActionResult> GetTripPlan(Guid id)
@@ -76,7 +98,7 @@ namespace TripPlanningService.Controllers
             if (plan == null)
                 return NotFound();
 
-            if (plan.UserId != userId)
+            if (plan.UserId != userId && !User.IsInRole("Admin"))
                 return Forbid();
 
             return Ok(plan);
@@ -93,6 +115,10 @@ namespace TripPlanningService.Controllers
                 return BadRequest(new { message = "Budžet ne može imati negativnu vrednost." });
 
             var userId = GetUserId();
+
+            var targetUserId = (request.TargetUserId.HasValue && User.IsInRole("Admin"))
+                ? request.TargetUserId.Value
+                : userId;
 
             var plan = new TripPlan
             {
@@ -140,7 +166,7 @@ namespace TripPlanningService.Controllers
             if (plan == null)
                 return NotFound();
 
-            if (plan.UserId != userId)
+            if (plan.UserId != userId && !User.IsInRole("Admin"))
                 return Forbid();
 
             plan.Name = request.Name;
@@ -165,7 +191,7 @@ namespace TripPlanningService.Controllers
             if (plan == null)
                 return NotFound();
 
-            if (plan.UserId != userId)
+            if (plan.UserId != userId && !User.IsInRole("Admin"))
                 return Forbid();
 
             try

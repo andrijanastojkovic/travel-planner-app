@@ -5,6 +5,8 @@ namespace TripPlanningService.DTOs
 {
     public class CreateTripPlanDto
     {
+        public Guid? TargetUserId { get; set; }
+
         [Required]
         [MaxLength(150)]
         public string Name { get; set; }

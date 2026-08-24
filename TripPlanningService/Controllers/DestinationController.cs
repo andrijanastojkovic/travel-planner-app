@@ -34,7 +34,9 @@ namespace TripPlanningService.Controllers
         {
             var userId = GetUserId();
             var plan = await _context.TripPlans.FindAsync(tripPlanId);
-            if (plan == null || plan.UserId != userId)
+            if (plan == null) 
+                return null;
+            if (plan.UserId != userId && !User.IsInRole("Admin")) 
                 return null;
             return plan;
         }

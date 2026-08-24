@@ -24,3 +24,13 @@ export const updateTripPlan = async (id, tripPlan) => {
 export const deleteTripPlan = async (id) => {
   await tripApi.delete(`/api/tripplans/${id}`);
 };
+
+export const getAllTripPlans = async () => {
+  const response = await tripApi.get('/api/tripplans/all');
+  return response.data.map(toTripPlan);
+};
+
+export const createTripPlanForUser = async (tripPlan, targetUserId) => {
+  const response = await tripApi.post('/api/tripplans', { ...tripPlan, targetUserId });
+  return response.data;
+};
