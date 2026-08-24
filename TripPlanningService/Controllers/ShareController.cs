@@ -126,5 +126,179 @@ namespace TripPlanningService.Controllers
 
             return Ok(dto);
         }
+
+        // POST: api/share/{token}/tripplan/{tripPlanId}/destinations
+        [HttpPost("share/{token}/tripplan/{tripPlanId}/destinations")]
+        [AllowAnonymous]
+        public async Task<ActionResult> CreateDestinationViaShare(string token, Guid tripPlanId, CreateDestinationDto request)
+        {
+            var valid = await ValidateEditTokenOrNull(token, tripPlanId);
+            if (valid == null) return Forbid();
+
+            if (request.DepartureDate < request.ArrivalDate)
+                return BadRequest(new { message = "Datum odlaska ne može biti pre datuma dolaska." });
+
+            var destination = new Destination
+            {
+                TripPlanId = tripPlanId,
+                Name = request.Name,
+                Location = request.Location,
+                ArrivalDate = request.ArrivalDate,
+                DepartureDate = request.DepartureDate,
+                Description = request.Description
+            };
+
+            _context.Destinations.Add(destination);
+            await _context.SaveChangesAsync();
+
+            return Ok(new DestinationDto
+            {
+                Id = destination.Id,
+                TripPlanId = destination.TripPlanId,
+                Name = destination.Name,
+                Location = destination.Location,
+                ArrivalDate = destination.ArrivalDate,
+                DepartureDate = destination.DepartureDate,
+                Description = destination.Description
+            });
+        }
+
+        // DELETE: api/share/{token}/tripplan/{tripPlanId}/destinations/{id}
+        [HttpDelete("share/{token}/tripplan/{tripPlanId}/destinations/{id}")]
+        [AllowAnonymous]
+        public async Task<ActionResult> DeleteDestinationViaShare(string token, Guid tripPlanId, Guid id)
+        {
+            var valid = await ValidateEditTokenOrNull(token, tripPlanId);
+            if (valid == null) return Forbid();
+
+            var destination = await _context.Destinations
+                .FirstOrDefaultAsync(d => d.Id == id && d.TripPlanId == tripPlanId);
+            if (destination == null) return NotFound();
+
+            _context.Destinations.Remove(destination);
+            await _context.SaveChangesAsync();
+            return NoContent();
+        }
+
+        // POST: api/share/{token}/tripplan/{tripPlanId}/activities
+        [HttpPost("share/{token}/tripplan/{tripPlanId}/activities")]
+        [AllowAnonymous]
+        public async Task<ActionResult> CreateActivityViaShare(string token, Guid tripPlanId, CreateActivityDto request)
+        {
+            var valid = await ValidateEditTokenOrNull(token, tripPlanId);
+            if (valid == null) return Forbid();
+
+            var activity = new DayActivity
+            {
+                TripPlanId = tripPlanId,
+                Date = request.Date,
+                Name = request.Name,
+                Time = request.Time,
+                Location = request.Location,
+                Description = request.Description,
+                EstimatedCost = request.EstimatedCost,
+                Status = request.Status
+            };
+
+            _context.Activities.Add(activity);
+            await _context.SaveChangesAsync();
+
+            return Ok(new ActivityDto
+            {
+                Id = activity.Id,
+                TripPlanId = activity.TripPlanId,
+                Date = activity.Date,
+                Name = activity.Name,
+                Time = activity.Time,
+                Location = activity.Location,
+                Description = activity.Description,
+                EstimatedCost = activity.EstimatedCost,
+                Status = activity.Status.ToString()
+            });
+        }
+
+        // DELETE: api/share/{token}/tripplan/{tripPlanId}/activities/{id}
+        [HttpDelete("share/{token}/tripplan/{tripPlanId}/activities/{id}")]
+        [AllowAnonymous]
+        public async Task<ActionResult> DeleteActivityViaShare(string token, Guid tripPlanId, Guid id)
+        {
+            var valid = await ValidateEditTokenOrNull(token, tripPlanId);
+            if (valid == null) return Forbid();
+
+            var activity = await _context.Activities
+                .FirstOrDefaultAsync(a => a.Id == id && a.TripPlanId == tripPlanId);
+            if (activity == null) return NotFound();
+
+            _context.Activities.Remove(activity);
+            await _context.SaveChangesAsync();
+            return NoContent();
+        }
+
+        // POST: api/share/{token}/tripplan/{tripPlanId}/checklist
+        [HttpPost("share/{token}/tripplan/{tripPlanId}/checklist")]
+        [AllowAnonymous]
+        public async Task<ActionResult> CreateChecklistItemViaShare(string token, Guid tripPlanId, CreateChecklistItemDto request)
+        {
+            var valid = await ValidateEditTokenOrNull(token, tripPlanId);
+            if (valid == null) return Forbid();
+
+            var item = new ChecklistItem
+            {
+                TripPlanId = tripPlanId,
+                Name = request.Name,
+                IsDone = false
+            };
+
+            _context.ChecklistItems.Add(item);
+            await _context.SaveChangesAsync();
+
+            return Ok(new ChecklistItemDto { Id = item.Id, TripPlanId = item.TripPlanId, Name = item.Name, IsDone = item.IsDone });
+        }
+
+        // PUT: api/share/{token}/tripplan/{tripPlanId}/checklist/{id}/toggle
+        [HttpPut("share/{token}/tripplan/{tripPlanId}/checklist/{id}/toggle")]
+        [AllowAnonymous]
+        public async Task<ActionResult> ToggleChecklistItemViaShare(string token, Guid tripPlanId, Guid id)
+        {
+            var valid = await ValidateEditTokenOrNull(token, tripPlanId);
+            if (valid == null) return Forbid();
+
+            var item = await _context.ChecklistItems
+                .FirstOrDefaultAsync(c => c.Id == id && c.TripPlanId == tripPlanId);
+            if (item == null) return NotFound();
+
+            item.IsDone = !item.IsDone;
+            await _context.SaveChangesAsync();
+            return Ok(new ChecklistItemDto { Id = item.Id, TripPlanId = item.TripPlanId, Name = item.Name, IsDone = item.IsDone });
+        }
+
+        // DELETE: api/share/{token}/tripplan/{tripPlanId}/checklist/{id}
+        [HttpDelete("share/{token}/tripplan/{tripPlanId}/checklist/{id}")]
+        [AllowAnonymous]
+        public async Task<ActionResult> DeleteChecklistItemViaShare(string token, Guid tripPlanId, Guid id)
+        {
+            var valid = await ValidateEditTokenOrNull(token, tripPlanId);
+            if (valid == null) return Forbid();
+
+            var item = await _context.ChecklistItems
+                .FirstOrDefaultAsync(c => c.Id == id && c.TripPlanId == tripPlanId);
+            if (item == null) return NotFound();
+
+            _context.ChecklistItems.Remove(item);
+            await _context.SaveChangesAsync();
+            return NoContent();
+        }
+
+        private async Task<ShareToken> ValidateEditTokenOrNull(string token, Guid tripPlanId)
+        {
+            var shareToken = await _context.ShareTokens
+                .FirstOrDefaultAsync(s => s.Token == token && s.TripPlanId == tripPlanId);
+
+            if (shareToken == null) return null;
+            if (shareToken.ExpiresAt < DateTime.UtcNow) return null;
+            if (shareToken.AccessType != AccessType.EDIT) return null;
+
+            return shareToken;
+        }
     }
 }

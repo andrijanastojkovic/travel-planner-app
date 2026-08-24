@@ -396,6 +396,8 @@ li > strong {
 /* Calendar */
 .calendar {
   margin-bottom: 20px;
+  width: 100%;
+  overflow-x: auto;
 }
 
 .calendar-header {
@@ -409,8 +411,10 @@ li > strong {
 
 .calendar-grid {
   display: grid;
-  grid-template-columns: repeat(7, 1fr);
+  grid-template-columns: repeat(7, minmax(0, 1fr));
   gap: 4px;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .calendar-weekdays {
@@ -427,6 +431,7 @@ li > strong {
 
 .calendar-cell {
   min-height: 70px;
+  min-width: 0;
   background: var(--bg-subtle);
   border: 1px solid var(--border);
   border-radius: 8px;
@@ -434,6 +439,8 @@ li > strong {
   display: flex;
   flex-direction: column;
   gap: 2px;
+  overflow: hidden;
+  box-sizing: border-box;
 }
 
 .calendar-cell-empty {
@@ -460,6 +467,8 @@ li > strong {
   overflow: hidden;
   text-overflow: ellipsis;
   width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
 }
 
 .calendar-activity:hover {
