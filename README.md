@@ -16,6 +16,10 @@ Sistem se sastoji od tri mikroservisa, svaki sa sopstvenom SQL Server bazom:
 
 Frontend komunicira direktno sa svakim servisom preko REST API-ja, koristeći JWT token dobijen prilikom prijave. Autorizacija sa deljenim planovima je javno dostupna preko posebnog tokena, bez potrebe za nalogom.
 
+### Dijagram arhitekture
+
+![Arhitektura sistema](docs/architecture_diagram.svg)
+
 ## Preduslovi
 
 - .NET 8 SDK
@@ -110,6 +114,10 @@ TravelPlannerApp/
         ├── pages/          # Stranice aplikacije
         └── services/       # HTTP komunikacija sa backend servisima
 ```
+
+## Use Case dijagram
+
+![Use case dijagram](docs/use_case_diagram.svg)
 
 ## Autor
 
