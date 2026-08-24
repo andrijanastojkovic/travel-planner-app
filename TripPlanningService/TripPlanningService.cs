@@ -37,11 +37,21 @@ namespace TripPlanningService
             return new ServiceReplicaListener[]
             {
                 new ServiceReplicaListener(serviceContext =>
-                    new KestrelCommunicationListener(serviceContext, (url, listener) =>
+                    new KestrelCommunicationListener(serviceContext, "ServiceEndpoint", (url, listener) =>
                     {
                         ServiceEventSource.Current.ServiceMessage(serviceContext, $"Starting Kestrel on {url}");
 
                         var builder = WebApplication.CreateBuilder();
+
+                        builder.Services.AddCors(options =>
+                        {
+                            options.AddPolicy("AllowFrontend", policy =>
+                            {
+                                policy.WithOrigins("http://localhost:5173")
+                                      .AllowAnyHeader()
+                                      .AllowAnyMethod();
+                            });
+                        });
 
                         builder.Services.AddDbContext<TripPlanningDbContext>(options => options.UseSqlServer(builder.Configuration.GetConnectionString("TripPlanningDb")));
 
@@ -75,7 +85,7 @@ namespace TripPlanningService
                         builder.WebHost
                                     .UseKestrel()
                                     .UseContentRoot(Directory.GetCurrentDirectory())
-                                    .UseServiceFabricIntegration(listener, ServiceFabricIntegrationOptions.UseUniqueServiceUrl)
+                                    .UseServiceFabricIntegration(listener, ServiceFabricIntegrationOptions.None)
                                     .UseUrls(url);
 
 
@@ -94,6 +104,7 @@ namespace TripPlanningService
                         app.UseSwagger();
                         app.UseSwaggerUI();
                         }
+                        app.UseCors("AllowFrontend");
                         app.UseAuthentication();
                         app.UseAuthorization();
                         app.MapControllers();

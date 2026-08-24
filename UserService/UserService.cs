@@ -38,13 +38,23 @@ namespace UserService
             return new ServiceReplicaListener[]
             {
                 new ServiceReplicaListener(serviceContext =>
-                    new KestrelCommunicationListener(serviceContext, (url, listener) =>
+                    new KestrelCommunicationListener(serviceContext, "ServiceEndpoint", (url, listener) =>
                     {
                         ServiceEventSource.Current.ServiceMessage(serviceContext, $"Starting Kestrel on {url}");
 
                         var builder = WebApplication.CreateBuilder(new WebApplicationOptions
                         {
                             ContentRootPath = Directory.GetCurrentDirectory()
+                        });
+
+                        builder.Services.AddCors(options =>
+                        {
+                            options.AddPolicy("AllowFrontend", policy =>
+                            {
+                                policy.WithOrigins("http://localhost:5173")
+                                      .AllowAnyHeader()
+                                      .AllowAnyMethod();
+                            });
                         });
 
                         builder.Services
@@ -81,7 +91,7 @@ namespace UserService
                         builder.WebHost
                                     .UseKestrel()
                                     .UseContentRoot(Directory.GetCurrentDirectory())
-                                    .UseServiceFabricIntegration(listener, ServiceFabricIntegrationOptions.UseUniqueServiceUrl)
+                                    .UseServiceFabricIntegration(listener, ServiceFabricIntegrationOptions.None)
                                     .UseUrls(url);
                         builder.Services.AddControllers();
                         builder.Services.AddEndpointsApiExplorer();
@@ -92,6 +102,7 @@ namespace UserService
                         app.UseSwagger();
                         app.UseSwaggerUI();
                         }
+                        app.UseCors("AllowFrontend");
                         app.UseAuthentication();
                         app.UseAuthorization();
                         app.MapControllers();

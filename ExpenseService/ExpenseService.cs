@@ -43,6 +43,16 @@ namespace ExpenseService
 
                         var builder = WebApplication.CreateBuilder();
 
+                        builder.Services.AddCors(options =>
+                        {
+                            options.AddPolicy("AllowFrontend", policy =>
+                            {
+                                policy.WithOrigins("http://localhost:5173")
+                                      .AllowAnyHeader()
+                                      .AllowAnyMethod();
+                            });
+                        });
+
                         builder.Services.AddDbContext<ExpenseDbContext>(options => options.UseSqlServer(builder.Configuration.GetConnectionString("ExpenseDb")));
 
                         var jwtSettings = builder.Configuration.GetSection("JwtSettings");
@@ -91,6 +101,7 @@ namespace ExpenseService
                         app.UseSwagger();
                         app.UseSwaggerUI();
                         }
+                        app.UseCors("AllowFrontend");
                         app.UseAuthentication();
                         app.UseAuthorization();
                         app.MapControllers();

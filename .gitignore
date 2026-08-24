@@ -6,3 +6,4 @@ packages/
 *.suo
 ApplicationParameters/*.xml
 PublishProfiles/*.xml
+TravelPlannerApp/pkg/
